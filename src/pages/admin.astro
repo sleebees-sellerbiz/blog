@@ -1,0 +1,348 @@
+---
+// 관리자 페이지 - 정적 빌드
+---
+
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>셀러비즈 블로그 관리</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #f5f5f5;
+        color: #1a1a1a;
+        line-height: 1.6;
+      }
+      header {
+        background: #fff;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      header h1 { font-size: 1.1rem; font-weight: 700; }
+      .badge {
+        background: #e8f5e9;
+        color: #2e7d32;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+      }
+      main {
+        max-width: 800px;
+        margin: 1.5rem auto;
+        padding: 0 1rem;
+      }
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .card h2 {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: #333;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+      }
+      input:focus, textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+      }
+      textarea {
+        width: 100%;
+        min-height: 400px;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: 'SF Mono', 'Consolas', monospace;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        resize: vertical;
+      }
+      .preview {
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        min-height: 60px;
+      }
+      .preview-item {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.3rem;
+      }
+      .preview-label {
+        color: #999;
+        min-width: 60px;
+      }
+      .preview-value {
+        font-weight: 500;
+      }
+      .actions {
+        display: flex;
+        gap: 0.8rem;
+        align-items: center;
+      }
+      button {
+        padding: 0.7rem 2rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .btn-publish {
+        background: #2563eb;
+        color: #fff;
+      }
+      .btn-publish:hover { background: #1d4ed8; }
+      .btn-publish:disabled {
+        background: #93b4f5;
+        cursor: not-allowed;
+      }
+      .btn-clear {
+        background: #f0f0f0;
+        color: #666;
+      }
+      .btn-clear:hover { background: #e0e0e0; }
+      .status {
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        display: none;
+        margin-bottom: 1rem;
+      }
+      .status.success {
+        display: block;
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+      }
+      .status.error {
+        display: block;
+        background: #fbe9e7;
+        color: #c62828;
+        border: 1px solid #ffcdd2;
+      }
+      .status.loading {
+        display: block;
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #bbdefb;
+      }
+      .help {
+        font-size: 0.8rem;
+        color: #999;
+        margin-top: 0.3rem;
+      }
+      @media (max-width: 600px) {
+        textarea { min-height: 300px; }
+        .actions { flex-direction: column; }
+        button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>셀러비즈 블로그 관리</h1>
+      <span class="badge">Admin</span>
+    </header>
+
+    <main>
+      <div id="status" class="status"></div>
+
+      <div class="card">
+        <h2>인증</h2>
+        <label for="password">관리자 비밀번호</label>
+        <input type="password" id="password" placeholder="비밀번호 입력" />
+      </div>
+
+      <div class="card">
+        <h2>글 발행</h2>
+        <label for="markdown">마크다운 (Frontmatter 포함)</label>
+        <textarea
+          id="markdown"
+          placeholder="Claude에서 복사한 마크다운을 여기에 붙여넣으세요.
+
+---
+title: &quot;글 제목&quot;
+description: &quot;설명&quot;
+createdAt: 2026-03-12
+author: &quot;민준&quot;
+category: &quot;success-story&quot;
+tags: [&quot;태그1&quot;, &quot;태그2&quot;]
+featured: false
+thumbnail: &quot;이미지URL&quot;
+---
+
+본문 내용..."
+        ></textarea>
+
+        <label for="filename">파일명</label>
+        <input type="text" id="filename" placeholder="자동 생성됨 (수정 가능)" />
+        <p class="help">영문 소문자, 하이픈만 사용. 예: my-blog-post</p>
+      </div>
+
+      <div class="card" id="preview-card" style="display:none">
+        <h2>미리보기</h2>
+        <div class="preview" id="preview"></div>
+      </div>
+
+      <div class="card">
+        <div class="actions">
+          <button class="btn-publish" id="publishBtn" onclick="publish()">발행하기</button>
+          <button class="btn-clear" onclick="clearAll()">초기화</button>
+        </div>
+      </div>
+    </main>
+
+    <script is:inline>
+      const markdownEl = document.getElementById('markdown');
+      const filenameEl = document.getElementById('filename');
+      const previewCard = document.getElementById('preview-card');
+      const previewEl = document.getElementById('preview');
+      const statusEl = document.getElementById('status');
+      const publishBtn = document.getElementById('publishBtn');
+
+      // 마크다운 입력 시 자동 파싱
+      markdownEl.addEventListener('input', () => {
+        const text = markdownEl.value;
+        const fm = parseFrontmatter(text);
+
+        if (fm.title) {
+          previewCard.style.display = 'block';
+          previewEl.innerHTML = `
+            <div class="preview-item"><span class="preview-label">제목</span><span class="preview-value">${fm.title}</span></div>
+            <div class="preview-item"><span class="preview-label">작성자</span><span class="preview-value">${fm.author || '-'}</span></div>
+            <div class="preview-item"><span class="preview-label">카테고리</span><span class="preview-value">${fm.category || '-'}</span></div>
+            <div class="preview-item"><span class="preview-label">날짜</span><span class="preview-value">${fm.createdAt || '-'}</span></div>
+          `;
+
+          // 파일명 자동 생성
+          if (!filenameEl.dataset.manual) {
+            const slug = generateSlug(fm.title);
+            filenameEl.value = slug;
+          }
+        } else {
+          previewCard.style.display = 'none';
+        }
+      });
+
+      // 파일명 수동 수정 감지
+      filenameEl.addEventListener('input', () => {
+        filenameEl.dataset.manual = 'true';
+      });
+
+      function parseFrontmatter(text) {
+        const match = text.match(/^---\s*\n([\s\S]*?)\n---/);
+        if (!match) return {};
+
+        const fm = {};
+        const lines = match[1].split('\n');
+        for (const line of lines) {
+          const m = line.match(/^(\w+):\s*["']?(.+?)["']?\s*$/);
+          if (m) fm[m[1]] = m[2];
+        }
+        return fm;
+      }
+
+      function generateSlug(title) {
+        // 한글 제목에서 핵심 영문/숫자 추출, 없으면 날짜 기반
+        const english = title.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+        if (english.length > 3) {
+          return english.toLowerCase().replace(/\s+/g, '-').slice(0, 50);
+        }
+        // 날짜 + 랜덤
+        const date = new Date().toISOString().slice(0, 10);
+        const rand = Math.random().toString(36).slice(2, 6);
+        return `post-${date}-${rand}`;
+      }
+
+      async function publish() {
+        const password = document.getElementById('password').value;
+        const markdown = markdownEl.value.trim();
+        const filename = filenameEl.value.trim();
+
+        if (!password) {
+          showStatus('비밀번호를 입력해주세요.', 'error');
+          return;
+        }
+        if (!markdown) {
+          showStatus('마크다운 내용을 붙여넣어주세요.', 'error');
+          return;
+        }
+        if (!filename) {
+          showStatus('파일명을 입력해주세요.', 'error');
+          return;
+        }
+
+        publishBtn.disabled = true;
+        showStatus('발행 중...', 'loading');
+
+        try {
+          const res = await fetch('/api/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ markdown, filename, password }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            showStatus(`${data.message} 1~2분 후 사이트에 반영됩니다.`, 'success');
+            markdownEl.value = '';
+            filenameEl.value = '';
+            filenameEl.dataset.manual = '';
+            previewCard.style.display = 'none';
+          } else {
+            showStatus(data.error || '발행 실패', 'error');
+          }
+        } catch (err) {
+          showStatus(`네트워크 오류: ${err.message}`, 'error');
+        } finally {
+          publishBtn.disabled = false;
+        }
+      }
+
+      function showStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = `status ${type}`;
+      }
+
+      function clearAll() {
+        markdownEl.value = '';
+        filenameEl.value = '';
+        filenameEl.dataset.manual = '';
+        previewCard.style.display = 'none';
+        statusEl.className = 'status';
+      }
+    </script>
+  </body>
+</html>
